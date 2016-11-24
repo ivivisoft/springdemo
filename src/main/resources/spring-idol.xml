@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--<context:annotation-config/>-->
+    <context:component-scan base-package="springidol"/>
+    <!--如果要打开注解@Aspect,并使其起作用必须定义这个,并且被@Aspect修饰的类必须在spring容器的管理中,(使用@Component或者在这个文件中配置bean)
+-->
+    <aop:aspectj-autoproxy/>
+    <util:list id="cities">
+        <bean class="springidol.City" p:name="Chicago" p:state="IL" p:population="2853114"/>
+        <bean class="springidol.City" p:name="Las Cruces" p:state="NM" p:population="91865"/>
+        <bean class="springidol.City" p:name="Hangzhou" p:state="ZJ" p:population="310000"/>
+        <bean class="springidol.City" p:name="ChangSha" p:state="HN" p:population="310275"/>
+        <bean class="springidol.City" p:name="ZhuZhou" p:state="HN" p:population="310001"/>
+    </util:list>
+
+    <util:properties id="settings" location="classpath:setting.properties"/>
+
+
+    <bean id="duke" class="springidol.Juggler">
+        <constructor-arg value="15"/>
+    </bean>
+
+    <bean id="sonnet29" class="springidol.Sonnet29"/>
+
+    <bean id="poeticDuke" class="springidol.PoeticJuggler">
+        <constructor-arg value="15"/>
+        <constructor-arg ref="sonnet29"/>
+    </bean>
+
+    <bean id="poeticDuke1" class="springidol.PoeticJuggler">
+        <constructor-arg value="15"/>
+        <constructor-arg>
+            <bean class="springidol.Sonnet29"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="stage" class="springidol.Stage" factory-method="getInstance"/>
+
+    <bean id="auditorium" class="springidol.Auditorium" init-method="turnOnLights" destroy-method="turnOffLights"/>
+
+    <bean id="instrumentalist" class="springidol.Instrumentalist"/>
+
+    <bean id="saxophone" class="springidol.Saxophone"/>
+
+
+    <bean id="kenny" class="springidol.Instrumentalist">
+        <property name="song" value="Jingle Bells"/>
+        <property name="instrument" ref="saxophone"/>
+    </bean>
+
+
+    <bean id="kenny1" class="springidol.Instrumentalist">
+        <property name="song" value="Jingle Bells"/>
+        <property name="instrument">
+            <bean class="springidol.Saxophone"/>
+        </property>
+    </bean>
+
+    <bean id="kenny2" class="springidol.Instrumentalist" p:song="Andy Zhang" p:instrument-ref="saxophone"/>
+
+    <bean id="guitar" class="springidol.Guitar"/>
+    <bean id="cymbal" class="springidol.Cymbal"/>
+    <bean id="harmonica" class="springidol.Harmonica"/>
+
+    <bean id="hank" class="springidol.OneManBand">
+        <property name="instruments">
+            <list>
+                <ref bean="guitar"/>
+                <ref bean="cymbal"/>
+                <ref bean="harmonica"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="hank1" class="springidol.OneManBandMap">
+        <property name="instruments">
+            <map>
+                <entry key="GUITAR" value-ref="guitar"/>
+                <entry key="CYMBAL" value-ref="cymbal"/>
+                <entry key="HARMONICA" value-ref="harmonica"/>
+            </map>
+        </property>
+    </bean>
+
+
+    <bean id="hank2" class="springidol.OneManBandProps">
+        <property name="instruments">
+            <props>
+                <prop key="GUITAR">Guitar Guitar Guitar</prop>
+                <prop key="CYMBAL">Cymbal Cymbal Cymbal</prop>
+                <prop key="HARMONICA">Harmonica Harmonica Harmonica</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="spelDemo" class="springidol.SpelDemo">
+        <property name="randomNumber" value="#{T(java.lang.Math).random()}"/>
+    </bean>
+
+    <bean id="cityDemo" class="springidol.CityDemo"
+          p:chosenCity="#{cities[T(java.lang.Math).random() * cities.size()]}"/>
+
+
+    <bean id="audience" class="springidol.Audience"/>
+
+
+    <!--<aop:config>-->
+    <!--<aop:aspect ref="audience">-->
+    <!--<aop:pointcut id="performcut" expression="execution(* springidol.Performer.perform(..))"/>-->
+    <!--&lt;!&ndash;<aop:before method="takeSeats" pointcut-ref="performcut"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;<aop:before method="turnOffCellPhones" pointcut-ref="performcut"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;<aop:after-returning method="applaud" pointcut-ref="performcut"/>&ndash;&gt;-->
+    <!--&lt;!&ndash;<aop:after-throwing method="demandRefund" pointcut="execution(* springidol.Performer.perform(..))"/>&ndash;&gt;-->
+    <!--<aop:around method="watchPerformance" pointcut-ref="performcut"/>-->
+    <!--</aop:aspect>-->
+    <!--</aop:config>-->
+
+
+    <bean id="magician" class="springidol.Magician"/>
+    <aop:config>
+        <aop:aspect ref="magician">
+            <aop:pointcut id="thinking"
+                          expression="execution(* springidol.Thinker.thinkOfSomething(String)) and args(thoughts)"/>
+            <aop:before method="interceptThoughts" pointcut-ref="thinking" arg-names="thoughts"/>
+        </aop:aspect>
+    </aop:config>
+
+    <bean id="thinker" class="springidol.Volunteer"/>
+
+    <!--使用aop引入概念,为现有接口添加新功能-->
+    <bean id="contestant" class="springidol.GraciousContestant"/>
+    <!--<aop:config>-->
+    <!--<aop:aspect>-->
+    <!--<aop:declare-parents types-matching="springidol.Performer+" implement-interface="springidol.Contestant"-->
+    <!--delegate-ref="contestant"/> &lt;!&ndash;default-impl="springidol.GraciousContestant"/> &ndash;&gt;-->
+    <!--</aop:aspect>-->
+    <!--</aop:config>-->
+
+
+    <bean id="criticismEngine" class="springidol.CriticismEngineImpl">
+        <property name="criticismPool">
+            <list>
+                <value>I'm not being rude,but that was appalling.</value>
+                <value>You may be the least talented person in this show.</value>
+                <value>Do everyone a favor and keep you day job.</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--<bean  class="springidol.JudgeAspect" factory-method="aspectOf">-->
+        <!--<property name="criticismEngine" ref="criticismEngine"/>-->
+    <!--</bean>-->
+
+
+</beans>
